@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="screenRecoder.css">
+</head>
+<body>
+    <!-- <video class="video" width="600px" controls></video> -->
+    <button class="record_Btn">Start Record</button>
+    <button class="stop_Btn">stop_Btn</button>
+    <p class="download_link"></p>
+    <script src="screenRecorder.js"></script>
+</body>
+</html>
+
+//the javascript code is here
+
+let btnStart = document.querySelector(".record_Btn");
+let btnStop = document.querySelector(".stop_Btn"); // Add this line
+
+let mediaRecorder;
+
+btnStart.addEventListener("click", async function () {
+  let stream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+  const mime = MediaRecorder.isTypeSupported("video/webm;codecs=vp9")
+    ? "video/webm;codecs=vp9"
+    : "video/webm";
+  mediaRecorder = new MediaRecorder(stream, { mimeType: mime });
+
+  let chunks = [];
+
+  mediaRecorder.addEventListener("dataavailable", (e) => {
+    chunks.push(e.data);
+  });
+
+  mediaRecorder.addEventListener("stop", function () {
+    let blob = new Blob(chunks, { type: chunks[0].type });
+    let url = URL.createObjectURL(blob);
+
+    // Create download link
+    let a = document.createElement('a');
+    a.href = url;
+    a.download = 'video.webm';
+
+    // Append the link to the DOM
+    document.body.appendChild(a);
+
+    // Trigger a click on the link
+    a.click();
+
+    // Remove the link from the DOM
+    document.body.removeChild(a);
+  });
+
+  // Start recording manually
+  mediaRecorder.start();
+});
+
+// Add this event listener
+btnStop.addEventListener("click", function () {
+  if (mediaRecorder) {
+    mediaRecorder.stop();
+  }
+});
